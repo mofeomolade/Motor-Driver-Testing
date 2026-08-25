@@ -49,11 +49,22 @@ uint8_t n = 10; //Variable for length of EEPROM test message
 uint8_t EEPROM_msg [n]; //Buffer to hold EEPROM test message
 
 //State flag for emergency power loss data write
-volatile uint8_t ISR_triggered = 0; 
+volatile bool ISR_triggered = false; 
+
+uint16_t HALL1_A_count = 0;
+uint16_t HALL1_B_count = 0;
+uint16_t HALL1_C_count = 0;
+uint16_t HALL1_D_count = 0;
+uint16_t HALL2_A_count = 0;
+uint16_t HALL2_B_count = 0;
+uint16_t HALL2_C_count = 0;
+uint16_t HALL2_D_count = 0;
 
 // Function declarations
 void power_loss_ISR();
-void drive_actuator(int actuator, double current);
+void extend_actuator(char actuator)
+void retract_actuator(char actuator);
+void stop_actuator (char actuator);
 
 void setup() {
   pinMode(VS_PIN, INPUT);
@@ -102,10 +113,10 @@ void setup() {
   delay(8500); //Full retraction from max extension takes ~7.5 seconds at 2A
 
   //Turn off all actuators
-  digitalWrite(IN1_A_PIN, LOW);
-  digitalWrite(IN1_B_PIN, LOW);
-  digitalWrite(IN1_B_PIN, LOW);
-  digitalWrite(IN1_B_PIN, LOW);
+  stop_actuator(A);
+  stop_actuator(B);
+  stop_actuator(C);
+  stop_actuator(D);
 
   Serial.begin (9600);
 }
@@ -123,9 +134,86 @@ void loop() {
 
 // Function definitions
 void power_loss_ISR() {
-  ISR_triggerd = true ;
+  ISR_triggerd = true;
 }
 
-void drive_actuator(int actuator, double current) {
-  return x + y;
+void extend_actuator(char actuator) {
+  switch (actuator){
+    case 'A':
+    digitalWrite(IN1_A_PIN, LOW);
+    digitalWrite(IN2_A_PIN, HIGH);
+    break;
+
+    case 'B':
+    digitalWrite(IN1_B_PIN, LOW);
+    digitalWrite(IN2_B_PIN, HIGH);
+    break;
+
+    case 'C':
+    digitalWrite(IN1_C_PIN, LOW);
+    digitalWrite(IN2_C_PIN, HIGH);
+    break;
+
+    case 'D' :
+    digitalWrite(IN1_D_PIN, LOW);
+    digitalWrite(IN2_D_PIN, HIGH);
+    break;
+  }
+}
+
+void retract_actuator(char actuator) {
+  switch (actuator){
+    case 'A':
+    digitalWrite(IN1_A_PIN, HIGH);
+    digitalWrite(IN2_A_PIN, LOW);
+    break;
+
+    case 'B':
+    digitalWrite(IN1_B_PIN, HIGH);
+    digitalWrite(IN2_B_PIN, LOW);
+    break;
+
+    case 'C':
+    digitalWrite(IN1_C_PIN, HIGH);
+    digitalWrite(IN2_C_PIN, LOW);
+    break;
+
+    case 'D' :
+    digitalWrite(IN1_D_PIN, HIGH);
+    digitalWrite(IN2_D_PIN, LOW);
+    break;
+  }
+}
+
+void stop_actuator(char actuator){
+  switch (actuator){
+    case 'A':
+    digitalWrite(IN1_A_PIN, LOW);
+    digitalWrite(IN2_A_PIN, LOW);
+    break;
+
+    case 'B':
+    digitalWrite(IN1_B_PIN, LOW);
+    digitalWrite(IN2_B_PIN, LOW);
+    break;
+
+    case 'C':
+    digitalWrite(IN1_C_PIN, LOW);
+    digitalWrite(IN2_C_PIN, LOW);
+    break;
+
+    case 'D' :
+    digitalWrite(IN1_D_PIN, LOW);
+    digitalWrite(IN2_D_PIN, LOW);
+    break;
+  }
+}
+
+int read_hall(char actuator) {
+  switch (actuator) {
+    case 'A' :
+    if(digitalRead(HALL2_A_PIN)) {
+      HALL2_A_count++;
+    }
+  }
 }
