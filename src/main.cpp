@@ -20,7 +20,6 @@ const uint8_t  IN2_A_PIN = 15
 const uint8_t  IN2_B_PIN = 18
 const uint8_t  IN2_C_PIN = 2
 const uint8_t  IN2_D_PIN = 37
-
 const uint8_t  INH_A_PIN = 1
 const uint8_t  INH_B_PIN = 16
 const uint8_t  INH_C_PIN = 0
@@ -37,14 +36,14 @@ const uint8_t  HALL2_C_PIN = 32
 const uint8_t  HALL2_D_PIN = 34
 
 //Current sensing pins
-const uint8_t  IS1_A_PIn = 23
-const uint8_t  IS1_B_PIN = 39
-const uint8_t  IS1_C_PIN = 20
-const uint8_t  IS1_D_PIN = 19
-const uint8_t  IS2_A_PIN = 21
-const uint8_t  IS2_B_PIN = 41
-const uint8_t  IS2_C_PIN = 22
-const uint8_t  IS2_D_PIN = 40
+const uint8_t  IS1_A_PIN = A9
+const uint8_t  IS1_B_PIN = A15
+const uint8_t  IS1_C_PIN = A6
+const uint8_t  IS1_D_PIN = A5
+const uint8_t  IS2_A_PIN = A7
+const uint8_t  IS2_B_PIN = A17
+const uint8_t  IS2_C_PIN = A8
+const uint8_t  IS2_D_PIN = A16
 
 uint8_t n = 10; //Variable for length of EEPROM test message
 uint8_t EEPROM_msg [n]; //Buffer to hold EEPROM test message
@@ -57,24 +56,58 @@ void power_loss_ISR();
 void drive_actuator(int actuator, double current);
 
 void setup() {
-  //Set INH pins HIGH to activate 
+  pinMode(VS_PIN, INPUT);
+
+  pinMode(IN1_A_PIN, OUTPUT);
+  pinMode(IN1_B_PIN, OUTPUT);
+  pinMode(IN1_C_PIN, OUTPUT);
+  pinMode(IN1_D_PIN, OUTPUT);
+  pinMode(IN2_A_PIN, OUTPUT);
+  pinMode(IN2_B_PIN, OUTPUT);
+  pinMode(IN2_C_PIN, OUTPUT);
+  pinMode(IN2_D_PIN, OUTPUT);
   pinMode(INH_A_PIN, OUTPUT);
   pinMode(INH_B_PIN, OUTPUT);
   pinMode(INH_C_PIN, OUTPUT);
   pinMode(INH_D_PIN, OUTPUT);
 
+  pinMode(HALL1_A_PIN, INPUT);
+  pinMode(HALL1_B_PIN, INPUT);
+  pinMode(HALL1_C_PIN, INPUT);
+  pinMode(HALL1_D_PIN, INPUT);
+  pinMode(HALL2_A_PIN, INPUT);
+  pinMode(HALL2_B_PIN, INPUT);
+  pinMode(HALL2_C_PIN, INPUT);
+  pinMode(HALL2_D_PIN, INPUT);
+
+  //Configure interrupt for power loss detection
+  attachInterrupt(digitalPinToInterrupt(VS_PIN), power_loss_ISR, FALLING);
+
+  //Set INH pins HIGH to activate H-bridges
   digitalWrite(INH_A_PIN, HIGH);
   digitalWrite(INH_B_PIN, HIGH);
   digitalWrite(INH_C_PIN, HIGH);
   digitalWrite(INH_D_PIN, HIGH);
-  
+
+  //Homing actuators. Full retraction is 0 position
+  digitalWrite(IN1_A_PIN, HIGH);
+  digitalWrite(IN2_A_PIN, LOW);
+  digitalWrite(IN1_B_PIN, HIGH);
+  digitalWrite(IN2_B_PIN, LOW);
+  digitalWrite(IN1_C_PIN, HIGH);
+  digitalWrite(IN2_C_PIN, LOW);
+  digitalWrite(IN1_D_PIN, HIGH);
+  digitalWrite(IN2_D_PIN, LOW);
+
+  delay(8500); //Full retraction from max extension takes ~7.5 seconds at 2A
+
+  //Turn off all actuators
+  digitalWrite(IN1_A_PIN, LOW);
+  digitalWrite(IN1_B_PIN, LOW);
+  digitalWrite(IN1_B_PIN, LOW);
+  digitalWrite(IN1_B_PIN, LOW);
+
   Serial.begin (9600);
-
-  //Configure interrupt for power loss detection
-  pinMode(VS_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(VS_PIN), power_loss_ISR, FALLING);
-
-  
 }
 
 void loop() {
@@ -84,7 +117,7 @@ void loop() {
     for (int i = 0; i < EEPROM.length(); i++) {
       EEPROM.write(i, 0); //Clear EEPROM by setting all registers to 0
     }
-    
+
   }
 }
 
