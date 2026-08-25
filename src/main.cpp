@@ -60,6 +60,13 @@ uint16_t HALL2_B_count = 0;
 uint16_t HALL2_C_count = 0;
 uint16_t HALL2_D_count = 0;
 
+//Char to indicate which direction actuator is noving for single-signal HALL
+// 'R' for retract, 'E' for extend
+char actuator_A_dir;
+char actuator_B_dir;
+char actuator_C_dir;
+char actuator_D_dir;
+
 // Function declarations
 void power_loss_ISR();
 void extend_actuator(char actuator)
@@ -142,16 +149,19 @@ void extend_actuator(char actuator) {
     case 'A':
     digitalWrite(IN1_A_PIN, LOW);
     digitalWrite(IN2_A_PIN, HIGH);
+    actuator_A_dir = 'E'
     break;
 
     case 'B':
     digitalWrite(IN1_B_PIN, LOW);
     digitalWrite(IN2_B_PIN, HIGH);
+    actuator_B_dir = 'E'
     break;
 
     case 'C':
     digitalWrite(IN1_C_PIN, LOW);
     digitalWrite(IN2_C_PIN, HIGH);
+    actuator__dir = 'E'
     break;
 
     case 'D' :
@@ -166,21 +176,25 @@ void retract_actuator(char actuator) {
     case 'A':
     digitalWrite(IN1_A_PIN, HIGH);
     digitalWrite(IN2_A_PIN, LOW);
+    actuator_A_dir = 'R'
     break;
 
     case 'B':
     digitalWrite(IN1_B_PIN, HIGH);
     digitalWrite(IN2_B_PIN, LOW);
+    actuator_B_dir = 'R'
     break;
 
     case 'C':
     digitalWrite(IN1_C_PIN, HIGH);
     digitalWrite(IN2_C_PIN, LOW);
+    actuator_C_dir = 'R'
     break;
 
     case 'D' :
     digitalWrite(IN1_D_PIN, HIGH);
     digitalWrite(IN2_D_PIN, LOW);
+    actuator_D_dir = 'R'
     break;
   }
 }
@@ -212,8 +226,10 @@ void stop_actuator(char actuator){
 int read_hall(char actuator) {
   switch (actuator) {
     case 'A' :
-    if(digitalRead(HALL2_A_PIN)) {
-      HALL2_A_count++;
+    if( digitalRead (HALL2_A_PIN) ) {
+      if (actuator_A_dir = 'E')
+        HALL2_A_count++;
+      else if (actuator_A_dir = )
     }
   }
 }
