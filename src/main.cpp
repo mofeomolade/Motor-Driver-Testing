@@ -51,14 +51,14 @@ uint8_t EEPROM_msg [n]; //Buffer to hold EEPROM test message
 //State flag for emergency power loss data write
 volatile bool ISR_triggered = false; 
 
-uint16_t HALL1_A_count = 0;
-uint16_t HALL1_B_count = 0;
-uint16_t HALL1_C_count = 0;
-uint16_t HALL1_D_count = 0;
-uint16_t HALL2_A_count = 0;
-uint16_t HALL2_B_count = 0;
-uint16_t HALL2_C_count = 0;
-uint16_t HALL2_D_count = 0;
+uint16_t HALL1_A_count;
+uint16_t HALL1_B_count;
+uint16_t HALL1_C_count;
+uint16_t HALL1_D_count;
+uint16_t HALL2_A_count;
+uint16_t HALL2_B_count;
+uint16_t HALL2_C_count;
+uint16_t HALL2_D_count;
 
 //Char to indicate which direction actuator is noving for single-signal HALL
 // 'R' for retract, 'E' for extend
@@ -124,6 +124,16 @@ void setup() {
   stop_actuator(B);
   stop_actuator(C);
   stop_actuator(D);
+
+  //Set HALL sensor count to 0 after homing
+  uint16_t HALL1_A_count = 0;
+  uint16_t HALL1_B_count = 0;
+  uint16_t HALL1_C_count = 0;
+  uint16_t HALL1_D_count = 0;
+  uint16_t HALL2_A_count = 0;
+  uint16_t HALL2_B_count = 0;
+  uint16_t HALL2_C_count = 0;
+  uint16_t HALL2_D_count = 0;
 
   Serial.begin (9600);
 }
@@ -229,7 +239,40 @@ int read_hall(char actuator) {
     if( digitalRead (HALL2_A_PIN) ) {
       if (actuator_A_dir = 'E')
         HALL2_A_count++;
-      else if (actuator_A_dir = )
+      else if (actuator_A_dir = 'R') {
+        HALL2_A_count--;
+      }
     }
+    break;
+
+    case 'B' :
+    if( digitalRead (HALL2_B_PIN) ) {
+      if (actuator_B_dir = 'E')
+        HALL2_B_count++;
+      else if (actuator_B_dir = 'R') {
+        HALL2_B_count--;
+      }
+    }
+    break;
+
+    case 'C' :
+    if( digitalRead (HALL2_C_PIN) ) {
+      if (actuator_C_dir = 'E')
+        HALL2_C_count++;
+      else if (actuator_C_dir = 'R') {
+        HALL2_C_count--;
+      }
+    }
+    break;
+
+    case 'D' :
+    if( digitalRead (HALL2_D_PIN) ) {
+      if (actuator_D_dir = 'E')
+        HALL2_D_count++;
+      else if (actuator_D_dir = 'R') {
+        HALL2_D_count--;
+      }
+    }
+    break;
   }
 }
