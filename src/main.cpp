@@ -46,12 +46,6 @@ const uint8_t  IS2_B_PIN = 41
 const uint8_t  IS2_C_PIN = 22
 const uint8_t  IS2_D_PIN = 40
 
-//CAN testing variables
-static uint32_t gBlinkDate = 0;
-static uint32_t gSendDate = 0;
-static uint32_t gSentCount = 0;
-static uint32_t gReceivedCount = 0;
-
 uint8_t n = 10; //Variable for length of EEPROM test message
 uint8_t EEPROM_msg [n]; //Buffer to hold EEPROM test message
 
@@ -76,25 +70,11 @@ void setup() {
   
   Serial.begin (9600);
 
-  Serial.print("Last EEPROM message: ");
-  
-  for(int i = 0; i < n; i++){
-    value = EEPROM.read(i);
-    Serial.print(value);
-  }
-  Serial.println();
-
-  Serial.print("Enter a ");
-  Serial.print(n); 
-  Serial.print("-digit number to store in EEPROM: ");
-  for (int i = 0; i < n; i++){
-    scanf("%d", EEPROM_msg[i]);
-  }
-  Serial.println();
-
   //Configure interrupt for power loss detection
   pinMode(VS_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(VS_PIN), power_loss_ISR, FALLING);
+
+  
 }
 
 void loop() {
