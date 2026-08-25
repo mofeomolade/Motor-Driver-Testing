@@ -84,7 +84,7 @@ void loop() {
     for (int i = 0; i < EEPROM.length(); i++) {
       EEPROM.write(i, 0); //Clear EEPROM by setting all registers to 0
     }
-
+    
   }
 }
 
