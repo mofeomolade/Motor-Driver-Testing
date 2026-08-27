@@ -6,8 +6,8 @@
 const uint8_t  VS_PIN = 24;
 
 //CAN transceiver pins
-const uint8_t  CAN_TX_PIN = 30;
-const uint8_t  CAN_RX_PIN = 31;
+const uint8_t  CAN_TX_PIN = 31;
+const uint8_t  CAN_RX_PIN = 30;
 const uint8_t  SHDN_PIN = 28;
 const uint8_t  STBY_PIN = 29;
 
@@ -45,12 +45,6 @@ const uint8_t  IS2_B_PIN = A17;
 const uint8_t  IS2_C_PIN = A8;
 const uint8_t  IS2_D_PIN = A16;
 
-const int n = 10; //Variable for length of EEPROM test message
-uint8_t EEPROM_msg[n]; //Buffer to hold EEPROM test message
-
-//State flag for emergency power loss data write
-volatile bool ISR_triggered = false; 
-
 uint16_t HALL1_A_count;
 uint16_t HALL1_B_count;
 uint16_t HALL1_C_count;
@@ -73,7 +67,6 @@ char actuator_3 = 'C';
 char actuator_4 = 'D';
 
 // Function declarations
-void power_loss_ISR();
 void extend_actuator(char actuator);
 void retract_actuator(char actuator);
 void stop_actuator (char actuator);
@@ -104,9 +97,6 @@ void setup() {
   pinMode(HALL2_C_PIN, INPUT);
   pinMode(HALL2_D_PIN, INPUT);
 
-  //Configure interrupt for power loss detection
-  attachInterrupt(digitalPinToInterrupt(VS_PIN), power_loss_ISR, FALLING);
-
   //Set INH pins HIGH to activate H-bridges
   digitalWrite(INH_A_PIN, HIGH);
   digitalWrite(INH_B_PIN, HIGH);
@@ -114,9 +104,12 @@ void setup() {
   digitalWrite(INH_D_PIN, HIGH);
 
   //Homing actuators. Full retraction is 0 position
-  extend_actuator(actuator_1);
+  retract_actuator(actuator_1);
+  delay(250);
   retract_actuator(actuator_2);
+  delay(250);
   retract_actuator(actuator_3);
+  delay(250);
   retract_actuator(actuator_4);
   delay(8500); //Full retraction from max extension takes ~7.5 seconds at 2A
 
@@ -140,21 +133,9 @@ void setup() {
 }
 
 void loop() {
-  if(ISR_triggered){
-    ISR_triggered = false;
-
-    for (int i = 0; i < EEPROM.length(); i++) {
-      EEPROM.write(i, 0); //Clear EEPROM by setting all registers to 0
-    }
-    Serial.print("Power disconnected");
-  }
 }
 
 // Function definitions
-void power_loss_ISR() {
-  ISR_triggered = true;
-}
-
 void extend_actuator(char actuator) {
   switch (actuator){
     case 'A':
@@ -295,5 +276,4 @@ void read_hall(char actuator) {
 }
 
 void position_save (uint8_t *buffer) {
-
 }
