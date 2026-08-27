@@ -45,32 +45,39 @@ const uint8_t  IS2_B_PIN = A17;
 const uint8_t  IS2_C_PIN = A8;
 const uint8_t  IS2_D_PIN = A16;
 
-uint16_t HALL1_A_count;
-uint16_t HALL1_B_count;
-uint16_t HALL1_C_count;
-uint16_t HALL1_D_count;
-uint16_t HALL2_A_count;
-uint16_t HALL2_B_count;
-uint16_t HALL2_C_count;
-uint16_t HALL2_D_count;
-
-//Char to indicate which direction actuator is noving for single-signal HALL
-// 'R' for retract, 'E' for extend
-char actuator_A_dir;
-char actuator_B_dir;
-char actuator_C_dir;
-char actuator_D_dir;
+int16_t HALL1_A_count;
+int16_t HALL1_B_count;
+int16_t HALL1_C_count;
+int16_t HALL1_D_count;
+int16_t HALL2_A_count;
+int16_t HALL2_B_count;
+int16_t HALL2_C_count;
+int16_t HALL2_D_count;
 
 char actuator_1 = 'A';
 char actuator_2 = 'B';
 char actuator_3 = 'C';
 char actuator_4 = 'D';
 
+//Char to indicate which direction actuator is noving for single-signal HALL
+// 'R' for retract, 'E' for extend, 'S' for stopped
+volatile char actuator_A_dir = 'S';
+volatile char actuator_B_dir = 'S';
+volatile char actuator_C_dir = 'S';
+volatile char actuator_D_dir = 'S';
+
+volatile bool power_lost = false;
+
 // Function declarations
 void extend_actuator(char actuator);
 void retract_actuator(char actuator);
 void stop_actuator (char actuator);
 void position_save (uint8_t *buffer);
+void hall_ISR_A (void);
+void hall_ISR_B (void);
+void hall_ISR_C (void);
+void hall_ISR_D (void);
+void power_loss_ISR(void);
 
 void setup() {
   pinMode(VS_PIN, INPUT);
@@ -97,6 +104,17 @@ void setup() {
   pinMode(HALL2_C_PIN, INPUT);
   pinMode(HALL2_D_PIN, INPUT);
 
+  attachInterrupt(digitalPinToInterrupt(VS_PIN), power_loss_ISR, FALLING);
+
+  attachInterrupt(digitalPinToInterrupt(HALL1_A_PIN), hall_ISR_A, RISING);
+  attachInterrupt(digitalPinToInterrupt(HALL1_B_PIN), hall_ISR_B, RISING);
+  attachInterrupt(digitalPinToInterrupt(HALL1_C_PIN), hall_ISR_C, RISING);
+  attachInterrupt(digitalPinToInterrupt(HALL1_D_PIN), hall_ISR_D, RISING);
+  attachInterrupt(digitalPinToInterrupt(HALL2_A_PIN), hall_ISR_A, RISING);
+  attachInterrupt(digitalPinToInterrupt(HALL2_B_PIN), hall_ISR_B, RISING);
+  attachInterrupt(digitalPinToInterrupt(HALL2_C_PIN), hall_ISR_C, RISING);
+  attachInterrupt(digitalPinToInterrupt(HALL2_D_PIN), hall_ISR_D, RISING);
+
   //Set INH pins HIGH to activate H-bridges
   digitalWrite(INH_A_PIN, HIGH);
   digitalWrite(INH_B_PIN, HIGH);
@@ -104,14 +122,8 @@ void setup() {
   digitalWrite(INH_D_PIN, HIGH);
 
   //Homing actuators. Full retraction is 0 position
-  retract_actuator(actuator_1);
-  delay(250);
-  retract_actuator(actuator_2);
-  delay(250);
-  retract_actuator(actuator_3);
-  delay(250);
-  retract_actuator(actuator_4);
-  delay(8500); //Full retraction from max extension takes ~7.5 seconds at 2A
+  //retract_actuator(actuator_1);
+  //delay(8000);
 
   //Turn off all actuators
   stop_actuator(actuator_1);
@@ -133,6 +145,11 @@ void setup() {
 }
 
 void loop() {
+  extend_actuator(actuator_1);
+  delay(4000);
+ 
+  retract_actuator(actuator_1);
+  delay(4000);
 }
 
 // Function definitions
@@ -195,8 +212,19 @@ void retract_actuator(char actuator) {
 void stop_actuator(char actuator){
   switch (actuator){
     case 'A':
-    digitalWrite(IN1_A_PIN, LOW);
-    digitalWrite(IN2_A_PIN, LOW);
+    if(actuator_A_dir == 'E'){
+      digitalWrite(IN1_A_PIN, LOW);
+      for(int PWM = 254; PWM > 0; PWM -= 10){
+        analogWrite(IN2_A_PIN, PWM);
+      }
+    }
+    else if(actuator_A_dir == 'R'){
+      for(int PWM = 254; PWM > 0; PWM -= 10){
+        analogWrite(IN1_A_PIN, HIGH);
+      }
+      digitalWrite(IN2_A_PIN, LOW);
+    }
+    actuator_A_dir = 'S';
     break;
 
     case 'B':
@@ -216,63 +244,47 @@ void stop_actuator(char actuator){
   }
 }
 
-void read_hall(char actuator) {
-  switch (actuator) {
-    case 'A' :
-    if( digitalRead (HALL2_A_PIN) ) {
-      if (actuator_A_dir == 'E') 
-        HALL2_A_count++;
-      else if (actuator_A_dir == 'R') {
-        HALL2_A_count--;
-      }
+void hall_ISR_A (void){
+  if (actuator_A_dir == 'E') 
+    HALL2_A_count++;
+  else if (actuator_A_dir == 'R') {
+    if (HALL2_A_count > 0){
+      HALL2_A_count--;
     }
-    break;
-
-    case 'B' :
-    if( digitalRead (HALL2_B_PIN) ) {
-      if (actuator_B_dir == 'E') {
-        HALL2_B_count++;
-      }
-      else if (actuator_B_dir == 'R') {
-        HALL2_B_count--;
-
-        if (HALL2_B_count < 0){
-          HALL2_B_count = 0;
-        }
-      }
-    }
-    break;
-
-    case 'C' :
-    if( digitalRead (HALL2_C_PIN) ) {
-      if (actuator_C_dir == 'E') {
-        HALL2_C_count++;
-      }
-      else if (actuator_C_dir == 'R') {
-        HALL2_C_count--;
-        
-        if (HALL2_C_count < 0) {
-          HALL2_C_count = 0;
-        }
-      }
-    }
-    break;
-
-    case 'D' :
-    if( digitalRead (HALL2_D_PIN) ) {
-      if (actuator_D_dir == 'E') {
-        HALL2_D_count++;
-      }
-      else if (actuator_D_dir == 'R') {
-        HALL2_D_count--;
-
-        if (HALL2_D_count < 0){
-          HALL2_D_count = 0;
-        }
-      }
-    }
-    break;
   }
+}
+
+void hall_ISR_B (void){
+  if (actuator_B_dir == 'E') 
+    HALL2_B_count++;
+  else if (actuator_B_dir == 'R') {
+    if (HALL2_B_count > 0){
+      HALL2_B_count--;
+    }
+  }
+}
+void hall_ISR_C (void){
+  if (actuator_C_dir == 'E') 
+    HALL2_C_count++;
+  else if (actuator_C_dir == 'R') {
+    if (HALL2_C_count > 0){
+      HALL2_C_count--;
+    }
+  }
+}
+
+void hall_ISR_D (void){
+  if (actuator_D_dir == 'E') 
+    HALL2_D_count++;
+  else if (actuator_D_dir == 'R') {
+    if (HALL2_D_count > 0){
+      HALL2_D_count--;
+    }
+  }
+}
+
+void power_loss_ISR(void) {
+  power_lost = true;
 }
 
 void position_save (uint8_t *buffer) {
