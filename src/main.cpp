@@ -164,6 +164,8 @@ void loop() {
   Serial.print("Actuator D Hall Count = ");
   Serial.println(HALL2_D_count);
 
+  Serial.println();
+
   retract_actuator(actuator_A);
   retract_actuator(actuator_B);
   retract_actuator(actuator_C);
