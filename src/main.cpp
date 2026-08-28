@@ -54,10 +54,10 @@ int16_t HALL2_B_count;
 int16_t HALL2_C_count;
 int16_t HALL2_D_count;
 
-char actuator_1 = 'A';
-char actuator_2 = 'B';
-char actuator_3 = 'C';
-char actuator_4 = 'D';
+char actuator_A = 'A';
+char actuator_B = 'B';
+char actuator_C = 'C';
+char actuator_D = 'D';
 
 //Char to indicate which direction actuator is noving for single-signal HALL
 // 'R' for retract, 'E' for extend, 'S' for stopped
@@ -122,14 +122,17 @@ void setup() {
   digitalWrite(INH_D_PIN, HIGH);
 
   //Homing actuators. Full retraction is 0 position
-  //retract_actuator(actuator_1);
-  //delay(8000);
+  retract_actuator(actuator_A);
+  retract_actuator(actuator_B);
+  retract_actuator(actuator_C);
+  retract_actuator(actuator_D);
+  delay(4000);
 
   //Turn off all actuators
-  stop_actuator(actuator_1);
-  stop_actuator(actuator_2);
-  stop_actuator(actuator_3);
-  stop_actuator(actuator_4);
+  stop_actuator(actuator_A);
+  stop_actuator(actuator_B);
+  stop_actuator(actuator_C);
+  stop_actuator(actuator_D);
 
   //Set HALL sensor count to 0 after homing
   HALL1_A_count = 0;
@@ -145,10 +148,16 @@ void setup() {
 }
 
 void loop() {
-  extend_actuator(actuator_1);
+  extend_actuator(actuator_A);
+  extend_actuator(actuator_B);
+  extend_actuator(actuator_C);
+  extend_actuator(actuator_D);
   delay(4000);
  
-  retract_actuator(actuator_1);
+  retract_actuator(actuator_A);
+  retract_actuator(actuator_B);
+  retract_actuator(actuator_C);
+  retract_actuator(actuator_D);
   delay(4000);
 }
 
