@@ -45,14 +45,14 @@ const uint8_t  IS2_B_PIN = A17;
 const uint8_t  IS2_C_PIN = A8;
 const uint8_t  IS2_D_PIN = A16;
 
-int16_t HALL1_A_count;
-int16_t HALL1_B_count;
-int16_t HALL1_C_count;
-int16_t HALL1_D_count;
-int16_t HALL2_A_count;
-int16_t HALL2_B_count;
-int16_t HALL2_C_count;
-int16_t HALL2_D_count;
+volatile int16_t HALL1_A_count;
+volatile int16_t HALL1_B_count;
+volatile int16_t HALL1_C_count;
+volatile int16_t HALL1_D_count;
+volatile int16_t HALL2_A_count;
+volatile int16_t HALL2_B_count;
+volatile int16_t HALL2_C_count;
+volatile int16_t HALL2_D_count;
 
 char actuator_A = 'A';
 char actuator_B = 'B';
@@ -95,15 +95,16 @@ void setup() {
   pinMode(INH_C_PIN, OUTPUT);
   pinMode(INH_D_PIN, OUTPUT);
 
-  pinMode(HALL1_A_PIN, INPUT);
-  pinMode(HALL1_B_PIN, INPUT);
-  pinMode(HALL1_C_PIN, INPUT);
-  pinMode(HALL1_D_PIN, INPUT);
-  pinMode(HALL2_A_PIN, INPUT);
-  pinMode(HALL2_B_PIN, INPUT);
-  pinMode(HALL2_C_PIN, INPUT);
-  pinMode(HALL2_D_PIN, INPUT);
+  pinMode(HALL1_A_PIN, INPUT_PULLUP);
+  pinMode(HALL1_B_PIN, INPUT_PULLUP);
+  pinMode(HALL1_C_PIN, INPUT_PULLUP);
+  pinMode(HALL1_D_PIN, INPUT_PULLUP);
+  pinMode(HALL2_A_PIN, INPUT_PULLUP);
+  pinMode(HALL2_B_PIN, INPUT_PULLUP);
+  pinMode(HALL2_C_PIN, INPUT_PULLUP);
+  pinMode(HALL2_D_PIN, INPUT_PULLUP);
 
+  //Digital interrupt to trigger an EEPROM save when power is disconnected
   attachInterrupt(digitalPinToInterrupt(VS_PIN), power_loss_ISR, FALLING);
 
   attachInterrupt(digitalPinToInterrupt(HALL1_A_PIN), hall_ISR_A, RISING);
@@ -154,6 +155,15 @@ void loop() {
   extend_actuator(actuator_D);
   delay(4000);
  
+  Serial.print("Actuator A Hall Count = ");
+  Serial.println(HALL2_A_count);
+  Serial.print("Actuator B Hall Count = ");
+  Serial.println(HALL2_B_count);
+  Serial.print("Actuator C Hall Count = ");
+  Serial.println(HALL2_C_count);
+  Serial.print("Actuator D Hall Count = ");
+  Serial.println(HALL2_D_count);
+
   retract_actuator(actuator_A);
   retract_actuator(actuator_B);
   retract_actuator(actuator_C);
@@ -162,13 +172,10 @@ void loop() {
 
   Serial.print("Actuator A Hall Count = ");
   Serial.println(HALL2_A_count);
-
   Serial.print("Actuator B Hall Count = ");
   Serial.println(HALL2_B_count);
-
   Serial.print("Actuator C Hall Count = ");
   Serial.println(HALL2_C_count);
-
   Serial.print("Actuator D Hall Count = ");
   Serial.println(HALL2_D_count);
 
