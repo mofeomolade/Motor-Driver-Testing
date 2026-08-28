@@ -126,7 +126,7 @@ void setup() {
   retract_actuator(actuator_B);
   retract_actuator(actuator_C);
   retract_actuator(actuator_D);
-  delay(8000);
+  delay(10000);
 
   //Turn off all actuators
   stop_actuator(actuator_A);
@@ -159,6 +159,20 @@ void loop() {
   retract_actuator(actuator_C);
   retract_actuator(actuator_D);
   delay(4000);
+
+  Serial.print("Actuator A Hall Count = ");
+  Serial.println(HALL2_A_count);
+
+  Serial.print("Actuator B Hall Count = ");
+  Serial.println(HALL2_B_count);
+
+  Serial.print("Actuator C Hall Count = ");
+  Serial.println(HALL2_C_count);
+
+  Serial.print("Actuator D Hall Count = ");
+  Serial.println(HALL2_D_count);
+
+  Serial.println();
 }
 
 // Function definitions
