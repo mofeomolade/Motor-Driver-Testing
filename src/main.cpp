@@ -126,7 +126,7 @@ void setup() {
   retract_actuator(actuator_B);
   retract_actuator(actuator_C);
   retract_actuator(actuator_D);
-  delay(4000);
+  delay(8000);
 
   //Turn off all actuators
   stop_actuator(actuator_A);
@@ -177,14 +177,14 @@ void extend_actuator(char actuator) {
     break;
 
     case 'C':
-    digitalWrite(IN1_C_PIN, LOW);
-    digitalWrite(IN2_C_PIN, HIGH);
+    digitalWrite(IN1_C_PIN, HIGH);
+    digitalWrite(IN2_C_PIN, LOW);
     actuator_C_dir = 'E';
     break;
 
     case 'D' :
-    digitalWrite(IN1_D_PIN, LOW);
-    digitalWrite(IN2_D_PIN, HIGH);
+    digitalWrite(IN1_D_PIN, HIGH);
+    digitalWrite(IN2_D_PIN, LOW);
     actuator_D_dir = 'E';
     break;
   }
@@ -205,14 +205,14 @@ void retract_actuator(char actuator) {
     break;
 
     case 'C':
-    digitalWrite(IN1_C_PIN, HIGH);
-    digitalWrite(IN2_C_PIN, LOW);
+    digitalWrite(IN1_C_PIN, LOW);
+    digitalWrite(IN2_C_PIN, HIGH);
     actuator_C_dir = 'R';
     break;
 
     case 'D' :
-    digitalWrite(IN1_D_PIN, HIGH);
-    digitalWrite(IN2_D_PIN, LOW);
+    digitalWrite(IN1_D_PIN, LOW);
+    digitalWrite(IN2_D_PIN, HIGH);
     actuator_D_dir = 'R';
     break;
   }
@@ -221,34 +221,27 @@ void retract_actuator(char actuator) {
 void stop_actuator(char actuator){
   switch (actuator){
     case 'A':
-    if(actuator_A_dir == 'E'){
-      digitalWrite(IN1_A_PIN, LOW);
-      for(int PWM = 254; PWM > 0; PWM -= 10){
-        analogWrite(IN2_A_PIN, PWM);
-      }
-    }
-    else if(actuator_A_dir == 'R'){
-      for(int PWM = 254; PWM > 0; PWM -= 10){
-        analogWrite(IN1_A_PIN, HIGH);
-      }
-      digitalWrite(IN2_A_PIN, LOW);
-    }
+    digitalWrite(IN1_A_PIN, LOW);
+    digitalWrite(IN2_A_PIN, LOW);
     actuator_A_dir = 'S';
     break;
 
     case 'B':
     digitalWrite(IN1_B_PIN, LOW);
     digitalWrite(IN2_B_PIN, LOW);
+    actuator_B_dir = 'S';
     break;
 
     case 'C':
     digitalWrite(IN1_C_PIN, LOW);
     digitalWrite(IN2_C_PIN, LOW);
+    actuator_C_dir = 'S';
     break;
 
     case 'D' :
     digitalWrite(IN1_D_PIN, LOW);
     digitalWrite(IN2_D_PIN, LOW);
+    actuator_D_dir = 'S';
     break;
   }
 }
